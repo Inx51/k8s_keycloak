@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: namespace-here
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+      namespace: namespace-here
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.0.0
+          args: ["start-dev"]
+          envFrom:
+            - configMapRef:
+                name: keycloak-secret
+          env:
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              valueFrom: 
+                secretKeyRef:
+                  name: keycloak-secrets
+                  key: adminUsername
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: keycloak-secrets
+                  key: adminPassword
+            - name: KC_DB_USERNAME
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: username
+            - name: KC_DB_PASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: password
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /realms/master
+              port: 8080

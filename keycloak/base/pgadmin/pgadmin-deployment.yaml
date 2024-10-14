@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin-deployment
+  namespace: namespace-here
+  labels:
+    app: pgadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgadmin
+  template:
+    metadata:
+      labels:
+        app: pgadmin
+      namespace: namespace-here
+    spec:
+      containers:
+        - name: pgadmin
+          image: dpage/pgadmin4
+          ports:
+            - containerPort: 80
+          env:
+            - name: PGADMIN_DEFAULT_EMAIL
+              value: admin
+            - name: PGADMIN_DEFAULT_PASSWORD
+              value: admin
+          volumeMounts:
+            - mountPath: /var/lib/pgadmin
+              name: pgadminstorage
+      volumes:
+        - name: pgadminstorage
+          persistentVolumeClaim:
+            claimName: pgadmin-persistent-volume-claims
